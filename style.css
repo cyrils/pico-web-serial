@@ -158,9 +158,10 @@ button.subtle {
 .tab-area {
   display: block;
   background-color: #FFF;
-  min-height: 100px;
+  min-height: 300px;
+  min-width: 90%;
+  margin: 0 auto;
   border: 1px solid #0091D5;
-  border-top: none;
   border-radius: 0 0 5px 5px;
   padding: 12px 12px 24px 12px;
 }
