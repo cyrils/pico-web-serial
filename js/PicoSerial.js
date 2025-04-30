@@ -1,23 +1,17 @@
-let usbVendorId = 0x2E8A
-let ascii = ['NUL', 'SOH', 'STX', 'ETX', 'EOT', 'ENQ', '' /*ACK*/, 'BEL', 'BS', '\t', '\n', 'VT', 'FF', '', 'SO', 'SI', 'DLE', 'DC1', 'DC2', 'DC3', 'DC4', 'NAK', 'SYN', 'ETB', '' /*CAN*/, 'EM', 'SUB', 'ESC', 'FS', 'GS', 'RS', 'US']
-let asciiChars = ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
-for (let i = 0; i < asciiChars.length; i++) ascii.push(asciiChars[i])
-ascii.push('DEL')
-for (let i = 0; i < 128; i++) ascii.push('.')
-window.ascii = ascii
+const VENDOR_ID = 0x2E8A
 
 class PicoSerial {
   constructor() {
-    this.pico = null;
+    this.pico = null
     this.reading = true
-    this.textDecoder = new TextDecoder();
+    this.textDecoder = new TextDecoder()
   }
 
   async start() {
     if (!navigator.serial) {
       alert("Your browser doesn't support connecting to the Pico (the web serial API)")
     } else {
-      this.pico = await navigator.serial.requestPort({ filters: [{ usbVendorId }] })
+      this.pico = await navigator.serial.requestPort({ filters: [{ usbVendorId: VENDOR_ID }] })
       if (this.pico) await this.openPico()
     }
   }
@@ -56,7 +50,7 @@ class PicoSerial {
     document.querySelector('#log').value = '';
   }
 
-  async readFromPico () {
+  async readFromPico() {
     this.reading = true
     try {
       while (this.reading) {
@@ -69,10 +63,6 @@ class PicoSerial {
     } finally {
       this.reader.releaseLock()
     }
-  }
-
-  asciify (val) {
-    return val.map(v => ascii[v]).join('')
   }
 
   async stop() {
