@@ -27,10 +27,8 @@ class PicoSerial {
 
   onConnect() {
     this.clearLog()
-    document.querySelectorAll(".hide").forEach(node => {
-      node.classList.remove('hidden');
-    })
     document.querySelector('#search').classList.add('hidden');
+    document.querySelector('#disconnect').classList.remove('hidden');
   }
 
   onDisconnect() {
@@ -40,23 +38,12 @@ class PicoSerial {
     document.querySelector('#search').classList.remove('hidden');
   }
 
-  log(message) {
-    let output = document.querySelector('#log');
-    output.value += message;
-    output.scrollTop = output.scrollHeight
-  }
-
-  clearLog() {
-    document.querySelector('#log').value = '';
-  }
-
   async readFromPico() {
     this.reading = true
     try {
       while (this.reading) {
         const { value } = await this.reader.read()
-        const output = this.textDecoder.decode(value);
-        this.log(output)
+        this.log(this.textDecoder.decode(value))
       }
     } catch (e) {
       console.log('Read from Pico error', e)
@@ -71,6 +58,16 @@ class PicoSerial {
     await this.reader.releaseLock()
     await this.pico.close()
     this.onDisconnect()
+  }
+
+  log(message) {
+    let output = document.querySelector('#log');
+    output.value += message;
+    output.scrollTop = output.scrollHeight
+  }
+
+  clearLog() {
+    document.querySelector('#log').value = '';
   }
 }
 
