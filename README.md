@@ -5,4 +5,4 @@ A web based client to monitor the Raspberry Pi Pico output logs using serial por
 
 ### How to use?
 
-Connect Pico to your laptop using micro usb cable. Then visit the [demo page](https://cyrils.github.io/pico-web-serial/serial.html) in your chrome browsser.
+Connect Pico to your laptop using micro usb cable. Then visit the [demo page](https://cyrils.github.io/pico-web-serial/serial.html) in your chrome browser.
