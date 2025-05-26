@@ -10,14 +10,30 @@
 <div class="title">Pico Serial</div>
 <div class="content">
   <div class="form">
-    <textarea id="log" class="tab-area" >[Connect a device]</textarea>
+    <button id="tab-shell" class="tab active" data-target="#shell">Shell</button>
+    <button id="tab-files" class="tab" data-target="#files">Files</button>
+    <textarea id="shell" class="tab-area" >[Connect a device]</textarea>
+    <div id="files" class="tab-area files hidden">
+      <div id="browser" class="browser"></div>
+      <textarea id="file-content" class="file-content"></textarea>
+    </div>
   </div>
+
   <div class="section"> </div>
-  <div class="toolbar">
-    <button id="search">Search device</button>
-    <button id="disconnect" class="hidden">Disconnect</button>
+
+  <div class="form">
+    <div class="toolbar">
+      <button id="search">Search device</button>
+      <button id="disconnect"  data-connected="true" class="hidden left">Disconnect</button>
+      <button id="reboot" data-connected="true" class="hidden right">🔄 Reboot</button>
+      <button id="stop" data-connected="true" class="hidden right">🛑 Stop</button>
+      <button id="save" data-connected="true" class="hidden right">💾 Save</button>
+      <span id="result" class="result"></span>
+    </div>
   </div>
 
 </div>
 <script src="./js/PicoSerial.js"></script>
+<script src="./js/Commands.js"></script>
+<script src="./js/App.js"></script>
 </html>

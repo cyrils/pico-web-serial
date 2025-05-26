@@ -1,41 +1,59 @@
 const VENDOR_ID = 0x2E8A
 
 class PicoSerial {
-  constructor() {
-    this.pico = null
-    this.reading = true
+  constructor(onConnect, onDisconnect, logger) {
+    this.picoPort = null
+    this.reading = false
     this.textDecoder = new TextDecoder()
+    this.textEncoder = new TextEncoder()
+    this.readLineBuffer = ''
+    this.readLineSubscribers = []
+    this.commandExecutor = new CommandExecutor(this)
+    this.connectCallback = onConnect
+    this.disconnectCallback = onDisconnect
+    this.logger = logger
   }
 
-  async start() {
+  async connect() {
     if (!navigator.serial) {
-      alert("Your browser doesn't support connecting to the Pico (the web serial API)")
+      alert("Your browser doesn't support connecting to the Pico (Web Serial API)")
     } else {
-      this.pico = await navigator.serial.requestPort({ filters: [{ usbVendorId: VENDOR_ID }] })
-      if (this.pico) await this.openPico()
+      if (!this.picoPort) this.picoPort = await navigator.serial.requestPort({ filters: [{ usbVendorId: VENDOR_ID }] })
+      if (this.picoPort) await this.openPico()
     }
   }
 
   async openPico() {
-    if (this.pico) await this.pico.open({ baudRate: 115200 })
+    if (this.picoPort) await this.picoPort.open({ baudRate: 115200 })
     this.onConnect()
-    this.log(`[Pico connected]\n\n`)
-    this.reader = this.pico.readable.getReader()
+    this.reader = this.picoPort.readable.getReader()
+    this.writer = this.picoPort.writable.getWriter()
     setTimeout(this.readFromPico.bind(this), 10)
-    this.pico.addEventListener('disconnect', this.onDisconnect.bind(this))
+    this.picoPort.addEventListener('disconnect', this.onDisconnect.bind(this))
   }
 
   onConnect() {
-    this.clearLog()
-    document.querySelector('#search').classList.add('hidden');
-    document.querySelector('#disconnect').classList.remove('hidden');
+    this.connectCallback()
   }
 
   onDisconnect() {
-    this.pico = null
-    this.log(`\n[Pico disconnected]\n\n`)
-    document.querySelector('#disconnect').classList.add('hidden');
-    document.querySelector('#search').classList.remove('hidden');
+    this.picoPort = null
+    this.disconnectCallback()
+  }
+
+  subscribe(id, fun) {
+    fun.__id = id
+    this.readLineSubscribers.push(fun)
+  }
+
+  unsubscribe(id) {
+    this.readLineSubscribers = this.readLineSubscribers.filter(sub => sub.__id !== id);
+  }
+
+  notifySubscribers(lineBuffer) {
+    this.readLineSubscribers.forEach(subscriber => {
+      subscriber(lineBuffer)
+    })
   }
 
   async readFromPico() {
@@ -43,38 +61,60 @@ class PicoSerial {
     try {
       while (this.reading) {
         const { value } = await this.reader.read()
-        this.log(this.textDecoder.decode(value))
+        const stringValue = this.textDecoder.decode(value)
+        this.lineStreamer(stringValue)
+        this.logger(stringValue)
       }
     } catch (e) {
       console.log('Read from Pico error', e)
-    } finally {
-      this.reader.releaseLock()
     }
   }
 
-  async stop() {
+  lineStreamer(stringValue) {
+    for (let i = 0; i < stringValue.length; i++) {
+      const char = stringValue[i]
+      if (char == '\n') {
+        this.notifySubscribers(this.readLineBuffer)
+        this.readLineBuffer = ''
+      } else if (char != '\r') {
+        this.readLineBuffer += char
+      }
+    }
+  }
+
+  async writeIntoPico(str) {
+    const buffer = this.textEncoder.encode(str)
+    console.log('writing to pico: ' + str)
+    await this.writer.write(buffer)
+  }
+
+  async disconnect() {
     this.reading = false
     await this.reader.cancel()
     await this.reader.releaseLock()
-    await this.pico.close()
+    await this.writer.close()
+    await this.writer.releaseLock()
+    await this.picoPort.close()
     this.onDisconnect()
   }
 
-  log(message) {
-    let output = document.querySelector('#log');
-    output.value += message;
-    output.scrollTop = output.scrollHeight
+  listFiles(callback) {
+    this.commandExecutor.execListDir('/', callback )
   }
 
-  clearLog() {
-    document.querySelector('#log').value = '';
+  readFile(file, callback) {
+    this.commandExecutor.execReadFile(file, callback)
+  }
+
+  saveFile(file, content, callback) {
+    this.commandExecutor.execWriteFile(file, content, callback)
+  }
+
+  stopDevice() {
+    this.commandExecutor.execInterrupt()
+  }
+
+  rebootDevice() {
+    this.commandExecutor.execReboot()
   }
 }
-
-window.addEventListener('DOMContentLoaded', async () => {
-  let app = new PicoSerial();
-
-  document.querySelector("#search").addEventListener("click", async () => await app.start());
-  document.querySelector("#disconnect").addEventListener("click", async () => await app.stop());
-  window.addEventListener('beforeunload', async () => await app.stop())
-});
