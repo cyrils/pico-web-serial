@@ -98,8 +98,8 @@ class PicoSerial {
     this.onDisconnect()
   }
 
-  listFiles(callback) {
-    this.commandExecutor.execListDir('/', callback )
+  listFiles(dir, callback) {
+    this.commandExecutor.execListDir(dir, callback )
   }
 
   readFile(file, callback) {

@@ -3,13 +3,20 @@ class App {
     constructor() {
         this.pico = new PicoSerial(this.onConnected.bind(this), this.onDisconnected.bind(this), this.log) 
         this.connected = false
+        this.running = true
     }
 
     init() {
         document.querySelector("#search").addEventListener("click", async () => await this.pico.connect());
         document.querySelector("#disconnect").addEventListener("click", async () => await this.pico.disconnect());
-        document.querySelector("#reboot").addEventListener("click", this.pico.rebootDevice.bind(this.pico));
-        document.querySelector("#stop").addEventListener("click", this.pico.stopDevice.bind(this.pico));
+        document.querySelector("#reboot").addEventListener("click", () => {
+            this.running = true
+            this.pico.rebootDevice()
+        });
+        document.querySelector("#stop").addEventListener("click", () => {
+            this.running = false
+            this.pico.stopDevice()
+        });
         document.querySelectorAll(".tab").forEach(tab => {
             tab.addEventListener("click", () => {
                 document.querySelectorAll(".tab").forEach(node => {
@@ -77,17 +84,36 @@ class App {
         document.querySelector("#shell").classList.add('hidden')
         document.querySelector("#reboot").classList.add('hidden')
         document.querySelector("#stop").classList.add('hidden')
-        if (this.connected) this.pico.listFiles(this.renderFiles.bind(this))
+        if (this.connected && !this.running) this.pico.listFiles(document.querySelector('#browser').dataset.dir, this.renderFiles.bind(this))
     }
 
     renderFiles(files) {
         const fileBrowser = document.querySelector('#browser')
         fileBrowser.innerHTML = ''
+        if (!Array.isArray(files)) files = []
+        if (fileBrowser.dataset.dir.split('/').length > 2) files.unshift('..|True|0')
+
         files.forEach(file => {
+            const [name, isDir, size] = file.split('|')
             const fileLink = document.createElement("a")
             fileLink.classList.add('file')
-            fileLink.innerHTML = "&#128221; " + file
-            fileLink.onclick = this.pico.readFile.bind(this.pico, file, this.renderFileContent.bind(this, file))
+            fileLink.innerHTML = (isDir == 'True' ? '&#128193; ' : '&#128221; ')  + name
+            if (isDir == 'True') {
+                fileLink.onclick = () => {
+                    if (name == '..') {
+                         const pathComponents = fileBrowser.dataset.dir.split('/')
+                         pathComponents.pop()
+                         pathComponents.pop()
+                         fileBrowser.dataset.dir = pathComponents.join('/') + '/'
+                    } else {
+                        fileBrowser.dataset.dir = fileBrowser.dataset.dir + name + '/'
+                    }
+                    this.pico.listFiles(fileBrowser.dataset.dir, this.renderFiles.bind(this))
+                }
+            } else {
+                const filePath = fileBrowser.dataset.dir + name
+                fileLink.onclick = this.pico.readFile.bind(this.pico, filePath, this.renderFileContent.bind(this, filePath))
+            }
             fileBrowser.appendChild(fileLink)
         })
     }
@@ -98,7 +124,3 @@ class App {
         document.querySelector('#file-content').value = content.join('\n')
     }
 }
-
-window.addEventListener('DOMContentLoaded', async () => {
-    new App().init()
-});

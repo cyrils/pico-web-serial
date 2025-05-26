@@ -54,7 +54,7 @@ class CommandExecutor {
         if (line.includes(this.outputStartMark)) {
             this.output = []
             this.outputStarted = true
-            if (line.length > this.outputStartMark.length) this.output.push(line.substr(this.outputStartMark.length)) // edge case
+            if (line.length > this.outputStartMark.length) this.output.push(line.substr(this.outputStartMark.length)) // edge case '>OK<output>'
         }
     }
 
@@ -109,8 +109,8 @@ class CommandExecutor {
 const __cmdListDir = (dir) => {  
 return `
 import os
-for f in os.listdir('${dir}'):
-    print(f)
+for (file, type, inode, size) in os.ilistdir('${dir}'):
+    print(f"{file}|{type==0x4000}|{size}")
 `
 }
 
