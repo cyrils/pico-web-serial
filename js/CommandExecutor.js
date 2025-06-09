@@ -8,69 +8,77 @@ class CommandExecutor {
             'Ctrl-D': '\x04',
             'Ctrl-E': '\x05'
         }
-        this.output = []
+        this.output = ''
         this.commandStarted = false
         this.commandStartEndMark = '>>> '
         this.outputStarted = false
         this.outputStartMark = '>OK'
         this.outputEndMark = `${this.commands["Ctrl-D"]}${this.commands["Ctrl-D"]}>`
+        this.outputCallback = null
+        this.parseTimer = null
     }
 
-    subscribe(callback) {
-        if (typeof callback == 'function'){
-            callback.__id = Math.floor((Math.random() * 10000))
-            this.pico.subscribe(callback.__id, this.lineParser.bind(this, callback))
+    streamer(value) {
+        if (!value) return
+        clearTimeout(this.parseTimer)
+        this.streamBuffer += value
+        if(this.streamBuffer.includes( '\r\n')) {
+            const lines = this.streamBuffer.split( '\r\n')
+            this.streamBuffer = lines.pop() // store left over
+            lines.forEach(line => {
+                this.lineParser(line)
+            })
         }
+        this.parseTimer = setTimeout(this.parseLeftOver.bind(this), 200)
     }
 
-    unsubscribe(callback) {
-        this.pico.unsubscribe(callback.__id)
-    }
-
-    lineParser(callback, line) {
-        if (line == this.commandStartEndMark) {
-            if (this.commandStarted && typeof callback == 'function') {
-                this.unsubscribe(callback)
-                callback('OK')
-                this.commandStarted = false
-            } else {
-                this.commandStarted = true
+    lineParser(line) {
+        if (line.includes(this.commandStartEndMark)) {
+            if (this.commandStarted) {
+                this.commandStarted = !this.commandStarted
+                this.invokeOutputCallback('OK')
             }
         }
-
-        if (line.includes(this.outputEndMark)) { // output completed
-            this.unsubscribe(callback)
-            if (typeof callback == 'function') {
-                if (this.outputStarted && this.output.length) callback(this.output)
-                else callback(this.outputStarted || line.includes(this.outputStartMark))
-            }
+        if (line.includes(this.outputEndMark)) { // result completed
+            if (this.outputStarted && this.output.length) this.invokeOutputCallback(this.output)
+            else this.invokeOutputCallback(this.outputStarted || line.includes(this.outputStartMark))
+            this.output = ''
             this.outputStarted = false
-            this.output = []
-            this.commandStarted = false
         }
         if (this.outputStarted) {
-            this.output.push(line)
+            this.output += this.output ? '\n' + line : line
         }
-        if (line.includes(this.outputStartMark)) {
-            this.output = []
+        if (line.includes(this.outputStartMark)) { // result started
+            this.output = ''
             this.outputStarted = true
-            if (line.length > this.outputStartMark.length) this.output.push(line.substr(this.outputStartMark.length)) // edge case '>OK<output>'
+            if (line.length > this.outputStartMark.length) this.output += line.substr(this.outputStartMark.length) // edge case '>OK<output>'
         }
+    }
+
+    parseLeftOver() {
+        this.lineParser(this.streamBuffer)
+    }
+
+    invokeOutputCallback(result) {
+        if (typeof this.outputCallback == 'function') {
+            this.outputCallback(result)
+        }
+        this.outputCallback = null
     }
 
     execInterrupt(callback = null) {
-        this.subscribe(callback)
+        this.outputCallback = callback
         this.pico.writeIntoPico(this.commands["Ctrl-C"])
     }
 
     execReboot(callback = null) {
-        this.subscribe(callback)
+        this.outputCallback = callback
         this.pico.writeIntoPico(this.commands["Ctrl-C"])
         this.pico.writeIntoPico(this.commands["Ctrl-D"])
     }
 
     execListDir(dir='/', callback) {
-        this.subscribe(callback)
+        this.outputCallback = callback
         this.pico.writeIntoPico(
             `
             ${this.commands["Ctrl-A"]}
@@ -82,7 +90,7 @@ class CommandExecutor {
     }
 
     execWriteFile(target, data, callback) {
-        this.subscribe(callback)
+        this.outputCallback = callback
         this.pico.writeIntoPico(
             `
             ${this.commands["Ctrl-A"]}
@@ -94,7 +102,7 @@ class CommandExecutor {
     }
 
     execReadFile(target, callback) {
-        this.subscribe(callback)
+        this.outputCallback = callback
         this.pico.writeIntoPico(
             `
             ${this.commands["Ctrl-A"]}

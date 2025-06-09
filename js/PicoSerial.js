@@ -41,28 +41,13 @@ class PicoSerial {
     this.disconnectCallback()
   }
 
-  subscribe(id, fun) {
-    fun.__id = id
-    this.readLineSubscribers.push(fun)
-  }
-
-  unsubscribe(id) {
-    this.readLineSubscribers = this.readLineSubscribers.filter(sub => sub.__id !== id);
-  }
-
-  notifySubscribers(lineBuffer) {
-    this.readLineSubscribers.forEach(subscriber => {
-      subscriber(lineBuffer)
-    })
-  }
-
   async readFromPico() {
     this.reading = true
     try {
       while (this.reading) {
         const { value } = await this.reader.read()
         const stringValue = this.textDecoder.decode(value)
-        this.lineStreamer(stringValue)
+        this.commandExecutor.streamer(stringValue)
         this.logger(stringValue)
       }
     } catch (e) {
@@ -70,21 +55,9 @@ class PicoSerial {
     }
   }
 
-  lineStreamer(stringValue) {
-    for (let i = 0; i < stringValue.length; i++) {
-      const char = stringValue[i]
-      if (char == '\n') {
-        this.notifySubscribers(this.readLineBuffer)
-        this.readLineBuffer = ''
-      } else if (char != '\r') {
-        this.readLineBuffer += char
-      }
-    }
-  }
-
   async writeIntoPico(str) {
     const buffer = this.textEncoder.encode(str)
-    console.log('writing to pico: ' + str)
+    console.log('writing to pico')
     await this.writer.write(buffer)
   }
 
@@ -99,7 +72,7 @@ class PicoSerial {
   }
 
   listFiles(dir, callback) {
-    this.commandExecutor.execListDir(dir, callback )
+    this.commandExecutor.execListDir(dir, callback)
   }
 
   readFile(file, callback) {
@@ -110,8 +83,8 @@ class PicoSerial {
     this.commandExecutor.execWriteFile(file, content, callback)
   }
 
-  stopDevice() {
-    this.commandExecutor.execInterrupt()
+  stopDevice(callback = null) {
+    this.commandExecutor.execInterrupt(callback)
   }
 
   rebootDevice() {

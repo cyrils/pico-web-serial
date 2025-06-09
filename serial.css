@@ -71,6 +71,12 @@ button.tab.active {
   border-bottom: 1px solid transparent;
 }
 
+button.tab.disabled{
+  color: #999;
+  border-color: #999;
+  pointer-events: none;
+}
+
 .tab-area {
   display: block;
   background-color: #FFF;
@@ -99,6 +105,10 @@ button.tab.active {
 
 .browser .file:hover {
   text-decoration: underline;
+}
+
+.browser .file.disabled {
+  color: #999;
 }
 
 .files .file-content {

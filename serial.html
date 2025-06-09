@@ -11,7 +11,7 @@
 <div class="content">
   <div class="form">
     <button id="tab-shell" class="tab active" data-target="#shell">Shell</button>
-    <button id="tab-files" class="tab" data-target="#files">Files</button>
+    <button id="tab-files" class="tab disabled" data-target="#files">Files</button>
     <textarea id="shell" class="tab-area" >[Connect a device]</textarea>
     <div id="files" class="tab-area files hidden">
       <div id="browser" data-dir="/" class="browser"></div>
@@ -34,7 +34,7 @@
 
 </div>
 <script src="./js/PicoSerial.js"></script>
-<script src="./js/Commands.js"></script>
+<script src="./js/CommandExecutor.js"></script>
 <script src="./js/App.js"></script>
 <script>
   window.addEventListener('DOMContentLoaded', async () => {

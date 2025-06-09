@@ -4,6 +4,7 @@ class App {
         this.pico = new PicoSerial(this.onConnected.bind(this), this.onDisconnected.bind(this), this.log) 
         this.connected = false
         this.running = true
+        this.supportedFiles = ['py', 'json', 'txt', 'md', 'ini', 'c']
     }
 
     init() {
@@ -12,10 +13,12 @@ class App {
         document.querySelector("#reboot").addEventListener("click", () => {
             this.running = true
             this.pico.rebootDevice()
+            document.querySelector("#tab-files").classList.add('disabled')
         });
         document.querySelector("#stop").addEventListener("click", () => {
             this.running = false
             this.pico.stopDevice()
+            document.querySelector("#tab-files").classList.remove('disabled')
         });
         document.querySelectorAll(".tab").forEach(tab => {
             tab.addEventListener("click", () => {
@@ -80,17 +83,19 @@ class App {
     }
 
     showFilesTab() {
+        if (!this.connected || this.running) return
         document.querySelector("#files").classList.remove('hidden')
         document.querySelector("#shell").classList.add('hidden')
         document.querySelector("#reboot").classList.add('hidden')
         document.querySelector("#stop").classList.add('hidden')
-        if (this.connected && !this.running) this.pico.listFiles(document.querySelector('#browser').dataset.dir, this.renderFiles.bind(this))
+        
+        this.pico.listFiles(document.querySelector('#browser').dataset.dir, this.renderFiles.bind(this))
     }
 
-    renderFiles(files) {
+    renderFiles(response) {
+        const files = response == true ? [] : response.split('\n')
         const fileBrowser = document.querySelector('#browser')
         fileBrowser.innerHTML = ''
-        if (!Array.isArray(files)) files = []
         if (fileBrowser.dataset.dir.split('/').length > 2) files.unshift('..|True|0')
 
         files.forEach(file => {
@@ -112,15 +117,21 @@ class App {
                 }
             } else {
                 const filePath = fileBrowser.dataset.dir + name
-                fileLink.onclick = this.pico.readFile.bind(this.pico, filePath, this.renderFileContent.bind(this, filePath))
+                const nameParts = name.split('.')
+                if (nameParts.length >1 && this.supportedFiles.indexOf(nameParts.pop().toLowerCase()) >= 0) {
+                    fileLink.onclick = this.pico.readFile.bind(this.pico, filePath, this.renderFileContent.bind(this, filePath))
+                } else {
+                    fileLink.classList.add('disabled')
+                }
             }
             fileBrowser.appendChild(fileLink)
         })
+        document.querySelector('#file-content').value = ''
     }
 
     renderFileContent(file, content) {
         document.querySelector("#save").classList.remove('hidden')
         document.querySelector('#file-content').dataset.file = file
-        document.querySelector('#file-content').value = content.join('\n')
+        document.querySelector('#file-content').value = Array.isArray(content) ? content.join('\n') : content
     }
 }
