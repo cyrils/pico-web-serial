@@ -1,7 +1,7 @@
 # Pico Web Serial
-A web based client to monitor the [Raspberry Pi Pico](https://www.raspberrypi.com/products/raspberry-pi-pico/) output logs using serial port. Supports minimal file browsing and code editing. This library uses [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) to read from USB serial port.
+A web based serial client for [Raspberry Pi Pico](https://www.raspberrypi.com/products/raspberry-pi-pico/). This library uses [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) to communicate through USB serial port. It can read serial output and supports basic file browsing and code editing. 
 
-**WORK IN PROGRESS!**  May reformat new lines while saving. Use with caution!
+**WORK IN PROGRESS!**  May reformat files while saving. Use with caution!
 
 <img width="600" alt="Shell" src="https://github.com/user-attachments/assets/c6b607e6-9995-430a-ad74-4d565d0454b5" />
 <img width="600" alt="File browser" src="https://github.com/user-attachments/assets/541586eb-db51-4d47-b789-b8965d5a323f" />
