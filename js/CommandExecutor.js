@@ -29,7 +29,7 @@ class CommandExecutor {
                 this.lineParser(line)
             })
         }
-        this.parseTimer = setTimeout(this.parseLeftOver.bind(this), 200)
+        this.parseTimer = setTimeout(this.lineParser.bind(this, this.streamBuffer), 200)
     }
 
     lineParser(line) {
@@ -53,10 +53,6 @@ class CommandExecutor {
             this.outputStarted = true
             if (line.length > this.outputStartMark.length) this.output += line.substr(this.outputStartMark.length) // edge case '>OK<output>'
         }
-    }
-
-    parseLeftOver() {
-        this.lineParser(this.streamBuffer)
     }
 
     invokeOutputCallback(result) {
