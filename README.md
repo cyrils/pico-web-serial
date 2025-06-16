@@ -3,7 +3,7 @@ A web based serial client for [Raspberry Pi Pico](https://www.raspberrypi.com/pr
 
 **WORK IN PROGRESS!**  May reformat files while saving. Use with caution!
 
-<img width="600" alt="Shell" src="https://github.com/user-attachments/assets/c6b607e6-9995-430a-ad74-4d565d0454b5" />
+<img width="600" alt="Shell" src="https://github.com/user-attachments/assets/ac8d436a-34ec-4ac1-a140-e1633bb33282" />
 <img width="600" alt="File browser" src="https://github.com/user-attachments/assets/541586eb-db51-4d47-b789-b8965d5a323f" />
 
 ### How to use?
