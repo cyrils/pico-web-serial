@@ -6,8 +6,6 @@ class PicoSerial {
     this.reading = false
     this.textDecoder = new TextDecoder()
     this.textEncoder = new TextEncoder()
-    this.readLineBuffer = ''
-    this.readLineSubscribers = []
     this.commandExecutor = new CommandExecutor(this)
     this.connectCallback = onConnect
     this.disconnectCallback = onDisconnect
@@ -83,11 +81,11 @@ class PicoSerial {
     this.commandExecutor.execWriteFile(file, content, callback)
   }
 
-  stopDevice(callback = null) {
+  stopDevice(callback) {
     this.commandExecutor.execInterrupt(callback)
   }
 
-  rebootDevice() {
-    this.commandExecutor.execReboot()
+  rebootDevice(callback) {
+    this.commandExecutor.execReboot(callback)
   }
 }

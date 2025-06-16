@@ -74,7 +74,6 @@ button.tab.active {
 button.tab.disabled{
   color: #999;
   border-color: #999;
-  pointer-events: none;
 }
 
 .tab-area {

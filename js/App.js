@@ -22,6 +22,7 @@ class App {
         });
         document.querySelectorAll(".tab").forEach(tab => {
             tab.addEventListener("click", () => {
+                if (tab.classList.contains('disabled')) return
                 document.querySelectorAll(".tab").forEach(node => {
                     node.classList.remove("active")
                 })
@@ -83,7 +84,7 @@ class App {
     }
 
     showFilesTab() {
-        if (!this.connected || this.running) return
+        if (!this.connected || this.running) return alert('Press Stop button')
         document.querySelector("#files").classList.remove('hidden')
         document.querySelector("#shell").classList.add('hidden')
         document.querySelector("#reboot").classList.add('hidden')
@@ -132,6 +133,6 @@ class App {
     renderFileContent(file, content) {
         document.querySelector("#save").classList.remove('hidden')
         document.querySelector('#file-content').dataset.file = file
-        document.querySelector('#file-content').value = Array.isArray(content) ? content.join('\n') : content
+        document.querySelector('#file-content').value = content
     }
 }
