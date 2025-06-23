@@ -24,7 +24,8 @@ body {
 
 .form {
   margin: 0 auto;
-  max-width: 800px;
+  width: 80%;
+  max-width: 1024px;
 }
 
 .section {
@@ -91,28 +92,82 @@ button.tab.disabled{
   display: flex;
 }
 
-.files .browser {
+.files #left-pane {
   width: 25%;
+  display: flex;
+  flex-direction: column;
+}
+
+#left-pane .browser {
   padding: 4px;
+  flex: auto;
+}
+
+.browser .file-entry {
+  display: flex;
+  flex-direction: row;
 }
 
 .browser .file {
   display: block;
   padding: 4px 0;
   cursor: pointer;
+  flex: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .browser .file:hover {
-  text-decoration: underline;
+  /* text-decoration: underline; */
+}
+
+.browser .file.selected {
+  font-weight: 500;
 }
 
 .browser .file.disabled {
   color: #999;
 }
 
+.browser .file-action {
+  display: none;
+  font-size: 11pt;
+}
+
+.file-entry:hover {
+  background-color: #f3f3f4;
+}
+
+.file-entry:hover .file-action {
+  display: block;
+  padding: 4px 0;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+.file-action:hover {
+  text-decoration: underline;
+}
+
+#left-pane #folder-toolbar {
+  display: flex;
+  justify-content: space-around;
+}
+
+.folder-action {
+  font-size: 10pt;
+  cursor: pointer;
+}
+
+.folder-action:hover{
+  text-decoration: underline;
+}
+
 .files .file-content {
   width: 75%;
   min-height: 100%;
+  padding: 4px;
 }
 .hidden {
   display: none;

@@ -88,4 +88,20 @@ class PicoSerial {
   rebootDevice(callback) {
     this.commandExecutor.execReboot(callback)
   }
+
+  createFile(name, callback) {
+    this.commandExecutor.execCreateFile(name, callback)
+  }
+
+  createFolder(name, callback) {
+    this.commandExecutor.execCreateFolder(name, callback)
+  }
+
+  deleteFile(name, callback) {
+    this.commandExecutor.execDeleteFile(name, callback)
+  }
+
+  renameFile(srcPath, targetPath, callback) {
+    this.commandExecutor.execRenameFile(srcPath, targetPath, callback)
+  }
 }

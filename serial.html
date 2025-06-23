@@ -14,7 +14,14 @@
     <button id="tab-files" class="tab disabled" data-target="#files">Files</button>
     <textarea id="shell" class="tab-area" >[Connect a device]</textarea>
     <div id="files" class="tab-area files hidden">
-      <div id="browser" data-dir="/" class="browser"></div>
+      <div id="left-pane">
+        <div id="browser" data-dir="/" class="browser"></div>
+        <div id="folder-toolbar" class="file-toolbar">
+          <a class="folder-action" id="create-file">&#128221; Create</a>
+          <a class="folder-action" id="create-folder">&#128193; Create</a>
+        </div>
+      </div>
+      
       <textarea id="file-content" class="file-content"></textarea>
     </div>
   </div>

@@ -24,7 +24,7 @@ class CommandExecutor {
         this.streamBuffer += value
         if(this.streamBuffer.includes( '\r\n')) {
             const lines = this.streamBuffer.split( '\r\n')
-            this.streamBuffer = lines.pop() // store left over
+            this.streamBuffer = lines.pop() // store left over chars
             lines.forEach(line => {
                 this.lineParser(line)
             })
@@ -48,7 +48,7 @@ class CommandExecutor {
         if (this.outputStarted) {
             this.output += this.output ? '\n' + line : line
         }
-        if (line.includes(this.outputStartMark)) { // result started
+        if (line.includes(this.outputStartMark) && !line.includes(this.outputEndMark)) { // result started
             this.output = ''
             this.outputStarted = true
             if (line.length > this.outputStartMark.length) this.output += line.substr(this.outputStartMark.length) // edge case '>OK<output>'
@@ -108,6 +108,54 @@ class CommandExecutor {
             `
         )
     }
+
+    execCreateFile(target, callback) {
+        this.outputCallback = callback
+        this.pico.writeIntoPico(
+            `
+            ${this.commands["Ctrl-A"]}
+            ${__cmdCreateFile(target)}
+            ${this.commands["Ctrl-D"]}
+            ${this.commands["Ctrl-B"]}
+            `
+        )
+    }
+
+    execCreateFolder(target, callback) {
+        this.outputCallback = callback
+        this.pico.writeIntoPico(
+            `
+            ${this.commands["Ctrl-A"]}
+            ${__cmdCreateFolder(target)}
+            ${this.commands["Ctrl-D"]}
+            ${this.commands["Ctrl-B"]}
+            `
+        )
+    }
+
+    execDeleteFile(target, callback) {
+        this.outputCallback = callback
+        this.pico.writeIntoPico(
+            `
+            ${this.commands["Ctrl-A"]}
+            ${__cmdDeleteFile(target)}
+            ${this.commands["Ctrl-D"]}
+            ${this.commands["Ctrl-B"]}
+            `
+        )
+    }
+
+    execRenameFile(src, target, callback) {
+        this.outputCallback = callback
+        this.pico.writeIntoPico(
+            `
+            ${this.commands["Ctrl-A"]}
+            ${__cmdRenameFile(src, target)}
+            ${this.commands["Ctrl-D"]}
+            ${this.commands["Ctrl-B"]}
+            `
+        )
+    }
 }
 
 const __cmdListDir = (dir) => {  
@@ -131,5 +179,32 @@ return `
 with open('${target}', 'r') as file:
     for line in file:
         print(line.rstrip())
+`
+}
+
+const __cmdCreateFile = (target) => {  
+return `
+open('${target}', 'w')
+`
+}
+
+const __cmdCreateFolder = (target) => {  
+return `
+import os
+os.mkdir('${target}')
+`
+}
+
+const __cmdDeleteFile = (target) => {  
+return `
+import os
+os.remove('${target}')
+`
+}
+
+const __cmdRenameFile = (src, target) => {  
+return `
+import os
+os.rename('${src}', '${target}')
 `
 }
