@@ -1,6 +1,13 @@
+:root {
+  --width: 80%;
+  --max-width: 1024px;
+  --theme-blue: #0091D5;
+  --theme-gray: #f3f3f4;
+}
+
 body {
   font-family: "Helvetica Neue";
-  background: #f3f3f4;
+  background: var(--theme-gray);
   padding: 0;
   margin: 0;
 }
@@ -8,7 +15,7 @@ body {
 .title {
   font-size: 16pt;
   font-weight: 600;
-  background: #0091D5;
+  background: var(--theme-blue);
   padding: 14px 20px;
   margin: 0 0 10px 0;
   color: white;
@@ -19,13 +26,9 @@ body {
 }
 
 .content {
-  margin: 70px auto 10px;
-}
-
-.form {
-  margin: 0 auto;
-  width: 80%;
-  max-width: 1024px;
+  margin: 70px auto 0px;
+  width: var(--width);
+  max-width: var(--max-width);
 }
 
 .section {
@@ -37,6 +40,9 @@ body {
 
 .toolbar {
   text-align: center;
+  width: var(--width);
+  max-width: var(--max-width);
+  margin: 0 auto 10px;
 }
 
 button, select {
@@ -44,8 +50,8 @@ button, select {
   background: #fff;
   padding: 6px 8px;
   margin: 4px;
-  color: #0091D5;
-  border: 1px solid #0091D5;
+  color: var(--theme-blue);
+  border: 1px solid var(--theme-blue);
   border-radius: 5px;
 }
 
@@ -56,8 +62,8 @@ select {
 
 button.tab {
   font-size: 12pt;
-  background: #f3f3f4;
-  border-bottom: 1px solid #0091D5;
+  background: var(--theme-gray);
+  border-bottom: 1px solid var(--theme-blue);
   border-radius: 5px 5px 0 0;
   margin: 0;
   padding: 8px;
@@ -80,12 +86,13 @@ button.tab.disabled{
 .tab-area {
   display: block;
   background-color: #FFF;
-  min-height: 500px;
+  min-height: 520px;
   width: 100%;
   margin: -1px auto;
-  border: 1px solid #0091D5;
+  border: 1px solid var(--theme-blue);
   border-radius: 0 0 5px 5px;
   padding: 12px 12px 24px 12px;
+  box-sizing: border-box;
 }
 
 .files {
@@ -132,7 +139,7 @@ button.tab.disabled{
 }
 
 .file-entry:hover {
-  background-color: #f3f3f4;
+  background-color: var(--theme-gray);
 }
 
 .file-entry:hover .file-action {
@@ -165,6 +172,7 @@ button.tab.disabled{
   min-height: 100%;
   padding: 6px;
 }
+
 .hidden {
   display: none;
 }

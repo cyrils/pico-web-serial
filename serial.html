@@ -8,38 +8,34 @@
     <title>Pico Serial</title>
   </head>
 <div class="title">Pico Serial</div>
+
 <div class="content">
-  <div class="form">
-    <button id="tab-shell" class="tab active" data-target="#shell">Shell</button>
-    <button id="tab-files" class="tab disabled" data-target="#files">Files</button>
-    <textarea id="shell" class="tab-area" >[Connect a device]</textarea>
-    <div id="files" class="tab-area files hidden">
-      <div id="left-pane">
-        <div id="browser" data-dir="/" class="browser"></div>
-        <div id="folder-toolbar" class="file-toolbar">
-          <a class="folder-action" id="create-file">&#128221; New file</a>
-          <a class="folder-action" id="create-folder">&#128193; New folder</a>
-        </div>
+  <button id="tab-shell" class="tab active" data-target="#shell">Shell</button>
+  <button id="tab-files" class="tab disabled" data-target="#files">Files</button>
+  <textarea id="shell" class="tab-area" >[Connect a device]</textarea>
+  <div id="files" class="tab-area files hidden">
+    <div id="left-pane">
+      <div id="browser" data-dir="/" class="browser"></div>
+      <div id="folder-toolbar" class="file-toolbar">
+        <a class="folder-action" id="create-file">&#128221; New file</a>
+        <a class="folder-action" id="create-folder">&#128193; New folder</a>
       </div>
-      
-      <textarea id="file-content" class="file-content"></textarea>
     </div>
+    <textarea id="file-content" class="file-content"></textarea>
   </div>
-
-  <div class="section"> </div>
-
-  <div class="form">
-    <div class="toolbar">
-      <button id="search">Search device</button>
-      <button id="disconnect"  data-connected="true" class="hidden left">Disconnect</button>
-      <button id="reboot" data-connected="true" class="hidden right">🔄 Reboot</button>
-      <button id="stop" data-connected="true" class="hidden right">🛑 Stop</button>
-      <button id="save" data-connected="true" class="hidden right">💾 Save</button>
-      <span id="result" class="result"></span>
-    </div>
-  </div>
-
 </div>
+
+<div class="section"> </div>
+
+<div class="toolbar">
+    <button id="search">Search device</button>
+    <button id="disconnect"  data-connected="true" class="hidden left">Disconnect</button>
+    <button id="reboot" data-connected="true" class="hidden right">🔄 Reboot</button>
+    <button id="stop" data-connected="true" class="hidden right">🛑 Stop</button>
+    <button id="save" data-connected="true" class="hidden right">💾 Save</button>
+    <span id="result" class="result"></span>
+</div>
+
 <script src="./js/PicoSerial.js"></script>
 <script src="./js/CommandExecutor.js"></script>
 <script src="./js/App.js"></script>

@@ -9,56 +9,46 @@ class App {
     }
 
     init() {
-        document.querySelector("#search").addEventListener("click", async () => await this.pico.connect());
-        document.querySelector("#disconnect").addEventListener("click", async () => await this.pico.disconnect());
-        document.querySelector("#reboot").addEventListener("click", () => {
+        this.__onClick("#search", async () => await this.pico.connect())
+        this.__onClick("#disconnect", async () => await this.pico.disconnect())
+        this.__onClick("#reboot", () => {
             this.running = true
             this.pico.rebootDevice()
             document.querySelector("#tab-files").classList.add('disabled')
-        });
-        document.querySelector("#stop").addEventListener("click", () => {
+        })
+        this.__onClick("#stop", () => {
             this.running = false
             this.pico.stopDevice()
             document.querySelector("#tab-files").classList.remove('disabled')
-        });
-        document.querySelectorAll(".tab").forEach(tab => {
-            tab.addEventListener("click", () => {
-                if (tab.classList.contains('disabled')) return
-                document.querySelectorAll(".tab").forEach(node => {
-                    node.classList.remove("active")
-                })
-                tab.classList.add("active")
-            })
         })
-        document.querySelector("#tab-shell").addEventListener("click", this.showShell.bind(this));
-        document.querySelector("#tab-files").addEventListener("click", this.showFilesTab.bind(this));
-        window.addEventListener('beforeunload', async () => await this.pico.stop());
-        document.querySelector("#save").addEventListener("click", () => {
+        this.__onClick("#tab-shell", this.showShell.bind(this))
+        this.__onClick("#tab-files", this.showFilesTab.bind(this))
+        this.__onClick("#save", () => {
             const fileContent = document.querySelector("#file-content")
             this.pico.saveFile(fileContent.dataset.file, fileContent.value, this.onFileSaved.bind(this))
         })
-        document.querySelector("#create-file").addEventListener("click", this.createFile.bind(this))
-        document.querySelector("#create-folder").addEventListener("click", this.createFolder.bind(this))
+        this.__onClick("#create-file", this.createFile.bind(this))
+        this.__onClick("#create-folder", this.createFolder.bind(this))
+        window.addEventListener('beforeunload', async () => await this.pico.stop())
     }
 
     onConnected() {
         this.connected = true
+        this.running = true
         this.clearLog()
         this.log(`[Pico connected]\n\n`)
-        document.querySelector('#search').classList.add('hidden')
-        document.querySelectorAll('[data-connected]').forEach(element => {
-            element.classList.remove('hidden')
-        })
+        this.__hide('#search')
+        this.__show('[data-connected]')
         this.showShell()
     }
 
     onDisconnected() {
         this.connected = false
         this.log(`\n[Pico disconnected]\n\n`)
-        document.querySelectorAll('[data-connected]').forEach(element => {
-            element.classList.add('hidden')
-        });
-        document.querySelector('#search').classList.remove('hidden');
+        this.__hide('[data-connected]')
+        this.__show('#search')
+        this.showShell()
+        document.querySelector('#tab-files').classList.add('disabled')
     }
 
     onFileSaved(message) {
@@ -77,24 +67,23 @@ class App {
     }
 
     showShell() {
-        document.querySelector("#save").classList.add('hidden')
-        document.querySelector("#files").classList.add('hidden')
-        document.querySelector("#shell").classList.remove('hidden')
+        this.__hide(['#save', '#files'])
+        this.__show('#shell')
         if (this.connected) {
-            document.querySelector("#reboot").classList.remove('hidden')
-            document.querySelector("#stop").classList.remove('hidden')
+            this.__show(['#reboot', '#stop'])
         }
+        document.querySelector('#tab-shell').classList.add('active')
+        document.querySelector('#tab-files').classList.remove('active')
     }
 
     showFilesTab() {
-        if (!this.connected) return alert('Please connect to Pico')
-        if (!this.connected || this.running) return alert('Press Stop button')
-        document.querySelector("#files").classList.remove('hidden')
-        document.querySelector("#shell").classList.add('hidden')
-        document.querySelector("#reboot").classList.add('hidden')
-        document.querySelector("#stop").classList.add('hidden')
-        
+        if (!this.connected) return alert('Please connect to Pico!')
+        if (!this.connected || this.running) return alert('Please press Stop button!')
+        this.__show('#files')
+        this.__hide(['#shell', '#reboot', '#stop'])
         this.pico.listFiles(document.querySelector('#browser').dataset.dir, this.renderFiles.bind(this))
+        document.querySelector('#tab-shell').classList.remove('active')
+        document.querySelector('#tab-files').classList.add('active')
     }
 
     asyncShowFilesTab(output) {
@@ -117,7 +106,6 @@ class App {
     renderFiles(response) {
         const files = response == true ? [] : response.split('\n')
         const fileBrowser = document.querySelector('#browser')
-        // const selectedFile = document.querySelector('#file-content').dataset.file
         const currentDir = fileBrowser.dataset.dir
 
         fileBrowser.innerHTML = ''
@@ -155,7 +143,7 @@ class App {
         })
         document.querySelector('#file-content').value = ''
         document.querySelector('#file-content').placeholder = ''
-        document.querySelector("#save").classList.add('hidden')
+        this.__hide('#save')
     }
 
     renderFileContent(file, fileNode, content) {
@@ -163,7 +151,7 @@ class App {
             node.classList.remove('selected')
         })
         fileNode && fileNode.classList.add('selected')
-        document.querySelector("#save").classList.remove('hidden')
+        this.__show('#save')
         document.querySelector('#file-content').dataset.file = file
         if (content == true){
             document.querySelector('#file-content').placeholder = '(empty)'
@@ -209,5 +197,28 @@ class App {
         title && (newNode.title = title)
         newNode.onclick = onclick
         return newNode
+    }
+
+    __onClick(selector, callback) {
+        const node = document.querySelector(selector)
+        node && node.addEventListener("click", callback)
+    }
+
+    __show(selectors) {
+        if (!Array.isArray(selectors)) selectors = [selectors]
+        selectors.forEach(selector => {
+            document.querySelectorAll(selector).forEach(node => {
+                node.classList.remove('hidden')
+            })
+        })
+    }
+
+    __hide(selectors) {
+        if (!Array.isArray(selectors)) selectors = [selectors]
+        selectors.forEach(selector => {
+            document.querySelectorAll(selector).forEach(node => {
+                node.classList.add('hidden')
+            })
+        })
     }
 }
