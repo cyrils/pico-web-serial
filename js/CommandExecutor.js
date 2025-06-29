@@ -13,7 +13,7 @@ class CommandExecutor {
         this.commandStartEndMark = '>>> '
         this.outputStarted = false
         this.outputStartMark = '>OK'
-        this.outputEndMark = `${this.commands["Ctrl-D"]}${this.commands["Ctrl-D"]}>`
+        this.outputEndMark = `${this.commands["Ctrl-D"]}>`
         this.outputCallback = null
         this.parseTimer = null
     }

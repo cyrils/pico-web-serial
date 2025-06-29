@@ -5,6 +5,7 @@ class App {
         this.connected = false
         this.running = true
         this.supportedFiles = ['py', 'json', 'txt', 'md', 'ini', 'c']
+        this.errorMessages = {39: 'Directory not empty!', 21: 'Directory exists!'}
     }
 
     init() {
@@ -86,6 +87,7 @@ class App {
     }
 
     showFilesTab() {
+        if (!this.connected) return alert('Please connect to Pico')
         if (!this.connected || this.running) return alert('Press Stop button')
         document.querySelector("#files").classList.remove('hidden')
         document.querySelector("#shell").classList.add('hidden')
@@ -95,8 +97,21 @@ class App {
         this.pico.listFiles(document.querySelector('#browser').dataset.dir, this.renderFiles.bind(this))
     }
 
-    asyncShowFilesTab() {
-        setTimeout(this.showFilesTab.bind(this), 100)
+    asyncShowFilesTab(output) {
+        if (typeof output == 'string' && output.includes('OSError:')) {
+            this.throwError(output)
+        } else {
+            setTimeout(this.showFilesTab.bind(this), 100)
+        }
+    }
+
+    throwError(output) {
+        const match = output.match(/OSError:.* (\d+)/)
+        var message = 'Unknown error occured!'
+        if (match && match[1]) {
+            message = this.errorMessages[parseInt(match[1])] || message
+        } 
+        alert('Error: ' + message)
     }
 
     renderFiles(response) {
@@ -111,7 +126,7 @@ class App {
         files.forEach(file => {
             const [name, isDir, size] = file.split('|')
             const fileLink = this.__createNode("a", 'file')
-            fileLink.innerHTML = (isDir == 'True' ? '&#128193; ' : '&#128196; ')  + name
+            fileLink.innerHTML = (isDir == 'True' ? '&#128193; ' : '&#128221; ')  + name
             if (isDir == 'True') {
                 fileLink.onclick = () => {
                     if (name == '..') {
@@ -161,9 +176,7 @@ class App {
         const newFile = window.prompt("Name of new file:")
         if (!newFile) return
         const filePath = document.querySelector('#browser').dataset.dir + newFile
-        this.pico.createFile(filePath, (() => {
-            setTimeout(this.showFilesTab.bind(this), 100)
-        }).bind(this))
+        this.pico.createFile(filePath, this.asyncShowFilesTab.bind(this))
     }
 
     createFolder() {
@@ -176,7 +189,7 @@ class App {
     deleteFile(name) {
         if (window.confirm("Delete file '" + name + "'?")) {
             const filePath = document.querySelector('#browser').dataset.dir + name
-            this.pico.deleteFile(filePath, this.asyncShowFilesTab.bind(this).bind(this))
+            this.pico.deleteFile(filePath, this.asyncShowFilesTab.bind(this))
         }
     }
 
@@ -185,7 +198,7 @@ class App {
         if (newName != '' && !newName.includes('/')) {
             const srcPath = document.querySelector('#browser').dataset.dir + name
             const targetPath = document.querySelector('#browser').dataset.dir + newName
-            this.pico.renameFile(srcPath, targetPath, this.asyncShowFilesTab.bind(this).bind(this))
+            this.pico.renameFile(srcPath, targetPath, this.asyncShowFilesTab.bind(this))
         }
     }
 
