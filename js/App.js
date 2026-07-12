@@ -6,6 +6,16 @@ class App {
         this.running = true
         this.supportedFiles = ['py', 'json', 'txt', 'md', 'ini', 'c']
         this.errorMessages = {39: 'Directory not empty!', 21: 'Directory exists!'}
+        this.ignorePatterns = [
+            ".git",
+            ".github",
+            "__pycache__",
+            ".DS_Store",
+            ".venv",
+            "venv",
+            ".idea",
+            ".vscode"
+        ]
     }
 
     init() {
@@ -27,8 +37,42 @@ class App {
             const fileContent = document.querySelector("#file-content")
             this.pico.saveFile(fileContent.dataset.file, fileContent.value, this.onFileSaved.bind(this))
         })
-        this.__onClick("#create-file", this.createFile.bind(this))
-        this.__onClick("#create-folder", this.createFolder.bind(this))
+        const actionsMenu = document.querySelector("#actions-menu")
+        if (actionsMenu) {
+            actionsMenu.addEventListener("change", (e) => {
+                const action = e.target.value
+                if (action === "create-file") {
+                    this.createFile()
+                } else if (action === "create-folder") {
+                    this.createFolder()
+                } else if (action === "delete-all") {
+                    this.deleteAll()
+                }
+                e.target.value = ""
+            })
+        }
+        const uploadMenu = document.querySelector("#upload-menu")
+        if (uploadMenu) {
+            uploadMenu.addEventListener("change", (e) => {
+                const action = e.target.value
+                if (action === "upload-files") {
+                    const fileInput = document.querySelector("#file-upload")
+                    if (fileInput) fileInput.click()
+                } else if (action === "upload-folder") {
+                    const folderInput = document.querySelector("#folder-upload")
+                    if (folderInput) folderInput.click()
+                }
+                e.target.value = ""
+            })
+        }
+        const folderUploadInput = document.querySelector("#folder-upload")
+        if (folderUploadInput) {
+            folderUploadInput.addEventListener("change", this.uploadFiles.bind(this))
+        }
+        const fileUploadInput = document.querySelector("#file-upload")
+        if (fileUploadInput) {
+            fileUploadInput.addEventListener("change", this.uploadFiles.bind(this))
+        }
         window.addEventListener('beforeunload', async () => await this.pico.stop())
     }
 
@@ -78,9 +122,23 @@ class App {
 
     showFilesTab() {
         if (!this.connected) return alert('Please connect to Pico!')
-        if (!this.connected || this.running) return alert('Please press Stop button!')
+        if (this.running) {
+            if (window.confirm('Stop Pico?')) {
+                this.running = false
+                document.querySelector("#tab-files").classList.remove('disabled')
+                this.pico.stopDevice()
+                this.__show('#files')
+                this.__hide(['#shell', '#reboot', '#stop', '#save'])
+                document.querySelector('#tab-shell').classList.remove('active')
+                document.querySelector('#tab-files').classList.add('active')
+                setTimeout(() => {
+                    this.pico.listFiles(document.querySelector('#browser').dataset.dir, this.renderFiles.bind(this))
+                }, 300)
+            }
+            return
+        }
         this.__show('#files')
-        this.__hide(['#shell', '#reboot', '#stop'])
+        this.__hide(['#shell', '#reboot', '#stop', '#save'])
         this.pico.listFiles(document.querySelector('#browser').dataset.dir, this.renderFiles.bind(this))
         document.querySelector('#tab-shell').classList.remove('active')
         document.querySelector('#tab-files').classList.add('active')
@@ -220,5 +278,101 @@ class App {
                 node.classList.add('hidden')
             })
         })
+    }
+
+    isIgnored(relativePath) {
+        const parts = relativePath.split('/');
+        for (const part of parts) {
+            if (!part) continue;
+            if (this.ignorePatterns.includes(part)) return true;
+            if (part.endsWith('.pyc') || part.endsWith('.swp') || part.endsWith('~')) return true;
+        }
+        return false;
+    }
+
+    async uploadFiles(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        const fileBrowser = document.querySelector('#browser');
+        const currentDir = fileBrowser.dataset.dir;
+        const resultSpan = document.querySelector("#result");
+
+        // Filter files to upload
+        const filesToUpload = [];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const checkPath = file.webkitRelativePath || file.name;
+            if (checkPath && !this.isIgnored(checkPath)) {
+                filesToUpload.push(file);
+            }
+        }
+
+        if (filesToUpload.length === 0) {
+            resultSpan.textContent = "No valid files to upload.";
+            setTimeout(() => { resultSpan.textContent = ''; }, 3000);
+            return;
+        }
+
+        resultSpan.textContent = `Preparing to upload ${filesToUpload.length} file(s)...`;
+
+        try {
+            // Keep track of directories we already created during this upload to avoid redundant serial calls
+            const createdDirs = new Set();
+
+            for (let i = 0; i < filesToUpload.length; i++) {
+                const file = filesToUpload[i];
+                let relativePath = (file.webkitRelativePath || file.name).replace(/\\/g, '/');
+                if (file.webkitRelativePath) {
+                    const pathParts = relativePath.split('/');
+                    pathParts.shift(); // Remove the top-level root folder
+                    relativePath = pathParts.join('/');
+                }
+                const targetPath = currentDir + relativePath;
+
+                // Determine parent directory path
+                const parts = targetPath.split('/');
+                parts.pop(); // Remove the filename to get parent dir
+                const parentDir = parts.join('/');
+
+                resultSpan.textContent = `Uploading [${i + 1}/${filesToUpload.length}]: ${file.name}...`;
+
+                // Recursively create directory on Pico if not already created/root
+                if (parentDir && parentDir !== '/' && !createdDirs.has(parentDir)) {
+                    await this.pico.createFolderRecursive(parentDir);
+                    createdDirs.add(parentDir);
+                }
+
+                // Read file content as ArrayBuffer
+                const fileBuffer = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(reader.error);
+                    reader.readAsArrayBuffer(file);
+                });
+
+                // Write file to Pico
+                await this.pico.uploadFile(targetPath, fileBuffer);
+            }
+
+            resultSpan.textContent = `Uploaded ${filesToUpload.length} file(s) successfully!`;
+            setTimeout(() => { resultSpan.textContent = ''; }, 5000);
+
+            // Refresh directory list
+            this.showFilesTab();
+        } catch (error) {
+            console.error('Upload error:', error);
+            resultSpan.textContent = `Upload failed: ${error}`;
+            alert(`Error during upload: ${error}`);
+        } finally {
+            event.target.value = '';
+        }
+    }
+
+    deleteAll() {
+        const currentDir = document.querySelector('#browser').dataset.dir
+        if (window.confirm("Delete all files inside '" + currentDir + "' recursively? This cannot be undone.")) {
+            this.pico.deleteAllRecursive(currentDir, this.asyncShowFilesTab.bind(this))
+        }
     }
 }

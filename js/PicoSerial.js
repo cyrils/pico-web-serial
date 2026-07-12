@@ -104,4 +104,27 @@ class PicoSerial {
   renameFile(srcPath, targetPath, callback) {
     this.commandExecutor.execRenameFile(srcPath, targetPath, callback)
   }
+
+  deleteAllRecursive(path, callback) {
+    this.commandExecutor.execDeleteAllRecursive(path, callback)
+  }
+
+  async uploadFile(targetPath, arrayBuffer) {
+    const base64Data = arrayBufferToBase64(arrayBuffer);
+    await this.commandExecutor.writeBase64File(targetPath, base64Data);
+  }
+
+  async createFolderRecursive(path) {
+    await this.commandExecutor.execCreateFolderRecursive(path);
+  }
+}
+
+function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
 }

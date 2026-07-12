@@ -158,6 +158,16 @@ button.tab.disabled{
   justify-content: space-evenly;
 }
 
+#left-pane #folder-toolbar select {
+  font-size: 10pt;
+  padding: 4px 6px;
+  margin: 2px;
+  width: 45%;
+  color: var(--theme-blue);
+  border: 1px solid var(--theme-blue);
+  background-color: #fff;
+}
+
 .folder-action {
   font-size: 10pt;
   cursor: pointer;
@@ -174,7 +184,7 @@ button.tab.disabled{
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .left {

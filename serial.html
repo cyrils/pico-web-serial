@@ -17,8 +17,19 @@
     <div id="left-pane">
       <div id="browser" data-dir="/" class="browser"></div>
       <div id="folder-toolbar" class="file-toolbar">
-        <a class="folder-action" id="create-file">&#128221; New file</a>
-        <a class="folder-action" id="create-folder">&#128193; New folder</a>
+        <select id="upload-menu">
+          <option value="" disabled selected>📤 Upload</option>
+          <option value="upload-files">📄 Upload Files</option>
+          <option value="upload-folder">📁 Upload Folder</option>
+        </select>
+        <select id="actions-menu">
+          <option value="" disabled selected>⚙️ Actions</option>
+          <option value="create-file">📝 New file</option>
+          <option value="create-folder">📁 New folder</option>
+          <option value="delete-all">❌ Delete all</option>
+        </select>
+        <input type="file" id="folder-upload" webkitdirectory directory multiple class="hidden">
+        <input type="file" id="file-upload" multiple class="hidden">
       </div>
     </div>
     <textarea id="file-content" class="file-content"></textarea>

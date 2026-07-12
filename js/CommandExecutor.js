@@ -86,15 +86,60 @@ class CommandExecutor {
     }
 
     execWriteFile(target, data, callback) {
-        this.outputCallback = callback
-        this.pico.writeIntoPico(
-            `
-            ${this.commands["Ctrl-A"]}
-            ${__cmdWriteFile(target, data)}
-            ${this.commands["Ctrl-D"]}
-            ${this.commands["Ctrl-B"]}
-            `
-        )
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(data);
+        const base64Data = arrayBufferToBase64(bytes.buffer);
+        
+        this.writeBase64File(target, base64Data)
+            .then(() => {
+                if (typeof callback === 'function') callback('OK');
+            })
+            .catch((err) => {
+                if (typeof callback === 'function') callback('OSError: ' + err);
+            });
+    }
+
+    execCommandPromise(code) {
+        return new Promise((resolve) => {
+            this.outputCallback = resolve;
+            this.pico.writeIntoPico(`${this.commands["Ctrl-A"]}${code}${this.commands["Ctrl-D"]}${this.commands["Ctrl-B"]}`);
+        });
+    }
+
+    async writeBase64File(target, base64Data) {
+        const chunkLength = 1024;
+        const totalLen = base64Data.length;
+        const escapedTarget = target.replace(/\\/g, '/').replace(/'/g, "\\'");
+        
+        if (totalLen === 0) {
+            const code = `with open('${escapedTarget}', 'wb') as f: pass`;
+            await this.execCommandPromise(code);
+            return;
+        }
+        
+        for (let i = 0; i < totalLen; i += chunkLength) {
+            const chunk = base64Data.slice(i, i + chunkLength);
+            const mode = (i === 0) ? 'wb' : 'ab';
+            const code = `import ubinascii\nwith open('${escapedTarget}', '${mode}') as f: f.write(ubinascii.a2b_base64('${chunk}'))`;
+            await this.execCommandPromise(code);
+        }
+    }
+
+    execCreateFolderRecursive(target) {
+        const escapedTarget = target.replace(/\\/g, '/').replace(/'/g, "\\'");
+        const code = `import os
+def makedirs(path):
+    parts = path.strip('/').split('/')
+    current = ''
+    for part in parts:
+        if not part: continue
+        current += '/' + part
+        try:
+            os.mkdir(current)
+        except OSError:
+            pass
+makedirs('${escapedTarget}')`;
+        return this.execCommandPromise(code);
     }
 
     execReadFile(target, callback) {
@@ -155,6 +200,39 @@ class CommandExecutor {
             ${this.commands["Ctrl-B"]}
             `
         )
+    }
+
+    execDeleteAllRecursive(target, callback) {
+        this.outputCallback = callback
+        const escapedTarget = target.replace(/\\/g, '/').replace(/'/g, "\\'");
+        const code = `import os
+def delete_all_recursive(path):
+    def rm_rf(p):
+        try:
+            for item in os.listdir(p):
+                full_path = (p.rstrip('/') + '/' + item) if p else item
+                try:
+                    mode = os.stat(full_path)[0]
+                    is_dir = (mode & 0o040000) != 0
+                except Exception:
+                    is_dir = False
+                if is_dir:
+                    rm_rf(full_path)
+                    try:
+                        os.rmdir(full_path)
+                    except Exception:
+                        pass
+                else:
+                    try:
+                        os.remove(full_path)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+    rm_rf(path)
+delete_all_recursive('${escapedTarget}')`;
+
+        this.pico.writeIntoPico(`${this.commands["Ctrl-A"]}${code}${this.commands["Ctrl-D"]}${this.commands["Ctrl-B"]}`)
     }
 }
 
