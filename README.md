@@ -8,4 +8,4 @@ A web based serial client for [Raspberry Pi Pico](https://www.raspberrypi.com/pr
 
 ### How to use?
 
-Connect Pico to your laptop using micro usb cable. Then visit the [demo page](https://cyrils.github.io/pico-web-serial/serial.html) in your chrome browser.
+Connect Pico to your laptop using micro usb cable. Then visit the [demo page](https://cyrils.github.io/pico-file-browser/serial.html) in your chrome browser.
