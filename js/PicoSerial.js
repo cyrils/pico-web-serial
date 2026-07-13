@@ -74,7 +74,18 @@ class PicoSerial {
   }
 
   readFile(file, callback) {
-    this.commandExecutor.execReadFile(file, callback)
+    this.commandExecutor.execReadFile(file, (base64Data) => {
+        if (typeof base64Data === 'string' && !base64Data.includes('OSError:')) {
+            try {
+                callback(base64ToText(base64Data));
+            } catch (e) {
+                console.error("Failed to decode base64 file:", e);
+                callback(base64Data);
+            }
+        } else {
+            callback(base64Data);
+        }
+    })
   }
 
   saveFile(file, content, callback) {
@@ -127,4 +138,15 @@ function arrayBufferToBase64(buffer) {
         binary += String.fromCharCode(bytes[i]);
     }
     return window.btoa(binary);
+}
+
+function base64ToText(base64) {
+    const binaryString = window.atob(base64.trim());
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    const decoder = new TextDecoder('utf-8');
+    return decoder.decode(bytes);
 }

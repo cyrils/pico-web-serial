@@ -1,11 +1,11 @@
 class App {
 
     constructor() {
-        this.pico = new PicoSerial(this.onConnected.bind(this), this.onDisconnected.bind(this), this.log) 
+        this.pico = new PicoSerial(this.onConnected.bind(this), this.onDisconnected.bind(this), this.log)
         this.connected = false
         this.running = true
         this.supportedFiles = ['py', 'json', 'txt', 'md', 'ini', 'c']
-        this.errorMessages = {39: 'Directory not empty!', 21: 'Directory exists!'}
+        this.errorMessages = { 39: 'Directory not empty!', 21: 'Directory exists!' }
         this.ignorePatterns = [
             ".git",
             ".github",
@@ -97,13 +97,19 @@ class App {
 
     onFileSaved(message) {
         document.querySelector("#result").textContent = message ? "Saved!" : "Save failed!"
-        setTimeout(() => {document.querySelector("#result").textContent = ''}, 3000)
+        setTimeout(() => { document.querySelector("#result").textContent = '' }, 3000)
     }
 
     log(message) {
+        const filesTab = document.querySelector('#tab-files')
+        if (filesTab && filesTab.classList.contains('active')) {
+            return
+        }
         let output = document.querySelector('#shell');
-        output.value += message;
-        output.scrollTop = output.scrollHeight
+        if (output) {
+            output.value += message;
+            output.scrollTop = output.scrollHeight
+        }
     }
 
     clearLog() {
@@ -157,7 +163,7 @@ class App {
         var message = 'Unknown error occured!'
         if (match && match[1]) {
             message = this.errorMessages[parseInt(match[1])] || message
-        } 
+        }
         alert('Error: ' + message)
     }
 
@@ -168,18 +174,18 @@ class App {
 
         fileBrowser.innerHTML = ''
         if (currentDir.split('/').length > 2) files.unshift('..|True|0')
-    
+
         files.forEach(file => {
             const [name, isDir, size] = file.split('|')
             const fileLink = this.__createNode("a", 'file')
-            fileLink.innerHTML = (isDir == 'True' ? '&#128193; ' : '&#128221; ')  + name
+            fileLink.innerHTML = (isDir == 'True' ? '&#128193; ' : '&#128221; ') + name
             if (isDir == 'True') {
                 fileLink.onclick = () => {
                     if (name == '..') {
-                         const pathComponents = fileBrowser.dataset.dir.split('/')
-                         pathComponents.pop()
-                         pathComponents.pop()
-                         fileBrowser.dataset.dir = pathComponents.join('/') + '/'
+                        const pathComponents = fileBrowser.dataset.dir.split('/')
+                        pathComponents.pop()
+                        pathComponents.pop()
+                        fileBrowser.dataset.dir = pathComponents.join('/') + '/'
                     } else {
                         fileBrowser.dataset.dir = fileBrowser.dataset.dir + name + '/'
                     }
@@ -188,7 +194,7 @@ class App {
             } else {
                 const filePath = fileBrowser.dataset.dir + name
                 const nameParts = name.split('.')
-                if (nameParts.length >1 && this.supportedFiles.indexOf(nameParts.pop().toLowerCase()) >= 0) {
+                if (nameParts.length > 1 && this.supportedFiles.indexOf(nameParts.pop().toLowerCase()) >= 0) {
                     fileLink.onclick = this.pico.readFile.bind(this.pico, filePath, this.renderFileContent.bind(this, filePath, fileLink))
                 } else {
                     fileLink.classList.add('disabled')
@@ -211,7 +217,7 @@ class App {
         fileNode && fileNode.classList.add('selected')
         this.__show('#save')
         document.querySelector('#file-content').dataset.file = file
-        if (content == true){
+        if (content == true) {
             document.querySelector('#file-content').placeholder = '(empty)'
         } else {
             document.querySelector('#file-content').value = content
