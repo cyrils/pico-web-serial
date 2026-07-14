@@ -1,26 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content=#0091D5 />
-    <link rel="stylesheet" href="serial.css">
-    <title>Pico Serial</title>
-  </head>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content=#0091D5 />
+  <link rel="stylesheet" href="serial.css">
+  <title>Pico Serial</title>
+</head>
 <div class="title">Pico Serial</div>
 
 <div class="content">
   <button id="tab-shell" class="tab active" data-target="#shell">Shell</button>
   <button id="tab-files" class="tab disabled" data-target="#files">Files</button>
-  <textarea id="shell" class="tab-area" >[Connect a device]</textarea>
+  <textarea id="shell" class="tab-area">[Connect a device]</textarea>
   <div id="files" class="tab-area files hidden">
     <div id="left-pane">
       <div id="browser" data-dir="/" class="browser"></div>
       <div id="folder-toolbar" class="file-toolbar">
         <select id="upload-menu">
           <option value="" disabled selected>📤 Upload</option>
-          <option value="upload-files">📄 Upload Files</option>
-          <option value="upload-folder">📁 Upload Folder</option>
+          <option value="upload-files">📄 Upload files</option>
+          <option value="upload-folder">📁 Upload folder</option>
         </select>
         <select id="actions-menu">
           <option value="" disabled selected>⚙️ Actions</option>
@@ -39,12 +40,12 @@
 <div class="section"> </div>
 
 <div class="toolbar">
-    <button id="search">Search device</button>
-    <button id="disconnect"  data-connected="true" class="hidden left">Disconnect</button>
-    <button id="reboot" data-connected="true" class="hidden right">🔄 Reboot</button>
-    <button id="stop" data-connected="true" class="hidden right">🛑 Stop</button>
-    <button id="save" data-connected="true" class="hidden right">💾 Save</button>
-    <span id="result" class="result"></span>
+  <button id="search">Search device</button>
+  <button id="disconnect" data-connected="true" class="hidden left">Disconnect</button>
+  <button id="reboot" data-connected="true" class="hidden right">🔄 Reboot</button>
+  <button id="stop" data-connected="true" class="hidden right">🛑 Stop</button>
+  <button id="save" data-connected="true" class="hidden right">💾 Save</button>
+  <span id="result" class="result"></span>
 </div>
 
 <script src="./js/PicoSerial.js"></script>
@@ -52,7 +53,8 @@
 <script src="./js/App.js"></script>
 <script>
   window.addEventListener('DOMContentLoaded', async () => {
-      new App().init()
+    new App().init()
   });
 </script>
+
 </html>

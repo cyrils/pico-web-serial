@@ -129,7 +129,7 @@ class App {
     showFilesTab() {
         if (!this.connected) return alert('Please connect to Pico!')
         if (this.running) {
-            if (window.confirm('Stop Pico?')) {
+            if (window.confirm('Stop Pico to browse files?')) {
                 this.running = false
                 document.querySelector("#tab-files").classList.remove('disabled')
                 this.pico.stopDevice()
