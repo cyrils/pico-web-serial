@@ -8,4 +8,4 @@ A web based file manager for [Raspberry Pi Pico](https://www.raspberrypi.com/pro
 
 ### How to use?
 
-Connect Pico to your laptop using micro usb cable. Then visit the [demo page](https://cyrils.github.io/pico-file-browser/serial.html) in your chrome browser.
+Connect Pico to your laptop using micro usb cable. Then visit the [demo page](https://cyrils.github.io/pico-file-manager/serial.html) in your chrome browser.
